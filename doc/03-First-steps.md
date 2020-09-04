@@ -397,3 +397,25 @@ Step 5....
 clearLoader();
 ```
 
+
+
+## Adding Pagination
+
+Search results pagination. 
+
+1. change renderResults function -> we pass recipes but also the page we want to display and results per page
+
+```js
+export const renderResults = (recipes, page = 1, resPerPage = 10) => {
+  const start = (page - 1) * resPerPage;
+  const end = page * resPerPage;
+  
+  recipes.slice(start, end).forEach(renderRecipe);
+}
+```
+
+👉🏻 we determine which one is the first to show and which one is the last
+
+2. render buttons on the interface
+3. attach some event handlers to these buttons in order to make the funcitonality work 
+
