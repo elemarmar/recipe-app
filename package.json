@@ -1,0 +1,27 @@
+{
+  "name": "recipe-app",
+  "version": "1.0.0",
+  "description": "%name% is a simple recipe searching app that allows the user to search for recipes, retrieving data from a third party API (.....). The purpose of building this app was to practice ES6 JavaScript, including:",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "dev": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elemarmar/recipe-app.git"
+  },
+  "author": "Elena Martínez Marín",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elemarmar/recipe-app/issues"
+  },
+  "homepage": "https://github.com/elemarmar/recipe-app#readme",
+  "devDependencies": {
+    "webpack": "^4.44.1",
+    "webpack-cli": "^2.1.5",
+    "webpack-dev-server": "^3.11.0"
+  }
+}
