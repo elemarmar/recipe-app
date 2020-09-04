@@ -416,6 +416,95 @@ export const renderResults = (recipes, page = 1, resPerPage = 10) => {
 
 👉🏻 we determine which one is the first to show and which one is the last
 
-2. render buttons on the interface
+
+
+
+
+2. render buttons on the interface: we write a private funciton `renderButtons`  -> render buttons according to the number of the page that we're on 
+
+```js
+const renderButtons = (page, numResults, resPerPage) => {
+  const pages = Math.ceil(numResults / resPerPage);
+  
+  if (page === 1 && pages > 1) {
+    // Button to go to next page
+    
+  } else if (page < pages) {
+    
+  } else if (page === pages && pages > 1) {
+    // Button to previous page
+    
+  } 
+}
+```
+
+create another function 
+
+```js
+// type: prev or next
+const createButton = (page, type) => `
+                <button class="btn-inline results__btn--${type}" data-goto=${type === 'prev' ? page - 1 : page + 1}>
+                    <svg class="search__icon">
+                        <use href="img/icons.svg#icon-triangle-${type === 'prev' ? 'left' : 'right'}"></use>
+                    </svg>
+                    <span>Page ${type === 'prev' ? page - 1 : page + 1}</span>
+                </button>
+`
+```
+
+we use data-* attribute because we'll later attach event handlers to the buttons -> identify them.
+
+We call the function:
+
+```js
+const renderButtons = (page, numResults, resPerPage) => {
+  const pages = Math.ceil(numResults / resPerPage);
+  let button;
+  
+  if (page === 1 && pages > 1) {
+    // Button to go to next page
+    button = createButton(page, 'next');
+  } else if (page < pages) {
+    // Both buttons
+    button = createButton(page, 'next') + createButton(page, 'prev');
+  } else if (page === pages && pages > 1) {
+    // Button to previous page
+    button = createButton(page, 'prev');
+  } 
+  elements.searchResPages.insertAdjacentHTML('afterbegin', button);
+}
+```
+
+why rounding up ceil (2.3 -> 3 pages instead of 2)
+
+we call them  inside renderResults
+
+
+
+
+
+
+
 3. attach some event handlers to these buttons in order to make the funcitonality work 
+
+taking advantage od data-* attribute
+
+we go back to the controller (event listeners)  we use event delegation because buttons are not there when the page loads for the first time.  We add the event listener to the box with results__pages
+
+```js
+elements.searchResPages.addEventListener('click', e => {
+  const btn = e.target.closest('.btn-inline');
+  if (btn) {
+    const goToPage = parseInt(btn.dataset.goto, 10);
+    searchView.clearResults();
+    searchView.renderResults(state.search.result, goToPage);
+  }
+})
+```
+
+we use the `closest` method: returns the closest ancestor of the current element which matches the selectors given in paramether
+
+we read the data stored in the data-* attribute
+
+we also clear the buttons in the `clearResults` function
 
