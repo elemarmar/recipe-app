@@ -60,7 +60,8 @@ module.exports = {
 <details><summary><strong>Explanation of this configuration file</strong></summary>
 <ul>
   <li>Point #1</li>
-  </ul></details>
+</ul>
+</details>
 
 <br />
 
@@ -84,9 +85,13 @@ module.exports = {
 
 ````
 
-**Explanation of this configuration file**
+<details><summary><strong>Explanation of this configuration file</strong></summary>
+<ul>
+  <li>Point #1</li>
+</ul>
+</details>
 
-- 
+
 
 ## 🤖 NPM scripts
 
@@ -98,7 +103,11 @@ module.exports = {
   },
 ```
 
-**Explanation of this configuration file**
+<details><summary><strong>Explanation of this configuration file</strong></summary>
+<ul>
+  <li>Point #1</li>
+</ul>
+</details>
 
 
 
