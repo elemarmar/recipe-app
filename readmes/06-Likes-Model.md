@@ -234,3 +234,49 @@ import { limitRecipeTitle } from './searchView';
 limitRecipeTitle(like.title);
 ```
 
+
+
+---
+
+## Persistent Data with LocalStorage
+
+The web storage API allows us to save key value pairs right in the browser and data stays even after website reloads
+
+localStorace is a function that lives  in the global object (window object)
+
+
+
+In Likes because it's where we want to implement localStorage
+
+Wach time we change our likes, we persist the data into the localStorage (adding a like and deleting a like) we call a new method:
+
+```js
+persistData() {
+  localStorage.setItem('likes', JSON.stringify(this.likes));
+}
+```
+
+Method to read back from the local storage when the page reloads
+
+```js
+readStorage() {
+  const storage = JSON.parse(localStorage.getItem('likes'));
+  
+  // Restore likes from the localstorage
+  if ( storage) this.likes = storage;
+}
+```
+
+We call it in the controller
+
+```js
+// Restore liked recipes on page load
+window.addEventListener('load', () => {
+  state.likes = new Likes();
+  state.likes.readStorage();
+  likesview.toggleLikeMenu(state.likes.getNumLikes());
+  
+  state.likes.likes.forEach(like => likesView.renderLike(like));
+})
+```
+
