@@ -33,14 +33,36 @@ export default class Recipe {
   
   async getRecipe(id) {
     try {
-        const res = await axios(`https://forkify-api.herokuapp.com/api/get?rId=${this.query}`);
-      	this.result = res.data.recipes;
+        const res = await axios(`https://forkify-api.herokuapp.com/api/get?rId=${this.id}`);
+      this.title = res.data.recipe.title;
+			this.author = res.data.recipe.publisher;
+      this.img = res.data.recipe.image_url;
+      this.url = res.data.recipe.source_url;
+      this.ingredients = res.data.recipe.ingredients;
     } catch (error) {
       console.log(error);
     }
 	}
+  
+  // we assume that for every 3 ingredients, we need 15 min
+  calcTime() {
+    const numIng = this.ingredients.length;
+    const periods = Math.ceil(numIng / 3);
+    this.time = periods * 15;
+  }
+  
+  calcServings() {
+    this.servings = 4;
+  }
 }
 ```
+
+<details>
+  <summary><strong>A bit more...</strong></summary>
+  <ul>
+    <li>Explanation</li>
+  </ul>
+</details>
 
 
 
@@ -60,17 +82,123 @@ const rec = new Recipe(46956);
 rec.getRecipe();
 ```
 
-👉🏻 we use the `new` operator and pass a query into it. This query will be attached as a property of the new Search object so that all the data about the search is encapsulated inside the object
-
--`search.getResults()` gets ther results for query `pizza`
+<details>
+  <summary><strong>A bit more...</strong></summary>
+  <ul>
+    <li>Here there is a test to see if it works we pass in a real recipe ID.</li>
+  </ul>
+</details>
 
 
 
 <br >
 
-## ⚒️ Building the Search Controller
+## ⚒️ Building the Recipe Controller
 
-There is only one controller file which will be our `index.js`.
+- Reading data from the page URL (id)
+- Responding to the `hash change` event
+- How to add the same event listener to multiple events.
+
+
+
+
+
+Whenever we click on a recipe result, the URL of the website changes. We can take advantage of this using the hash change event in js. We add a `hash change` event listener to the global object - the window object
+
+**index.js**
+
+```js
+/**
+ * RECIPE CONTROLLER
+ */
+
+window.addEventListener('hashchange', controlRecipe);
+```
+
+We create `controlRecipe` function that will be called whenever the hash in the url changes.
+
+```js
+const controlRecipe = async () => {
+  // 1. get ID from URL
+  const id = window.location.hash.replace('#', '');
+  
+  if (id) {
+    // 2. prepare UI for changes
+    
+    // 3. create recipe object
+    state.recipe = new Recipe(id);
+    
+    // 4. get recipe data
+    await state.recipe.getRecipe();
+    
+    // 5. calculate servings and time
+    state.recipe.calcTime();
+    state.recipe.calcServings();
+    
+    // 6. render recipe
+    
+  }
+}
+```
+
+We can get the hash by using `window.location` -> the entire URL but we use the `hash` property on it.
+
+Since that gives us back the id including the hash, we need to get rid of the `#` and therefore we use the `replace` method. 
+
+We make it async because we want to use the await on getting recipe data
+
+
+
+**Fixing hash prob**
+
+The event just happens when the hash changes but if we open the url with the id, we want th event to also fire so we need to add an event listener to the load event, which fires whenever the page is loaded
+
+```js
+window.addEventListener('load', controlRecipe);
+window.addEventListener('hashchange', controlRecipe);
+```
+
+Because we adding same callback function to different events to the same object, we can do it with a loop:
+
+```js
+['hashchange', 'load'].forEach(event => window.addEventListener(event, controlRecipe));
+```
+
+
+
+We have to take into account that the promise that `state.recipe.getRecipe()` returns might go wrong -> we add a try catch
+
+```js
+const controlRecipe = async () => {
+  // 1. get ID from URL
+  const id = window.location.hash.replace('#', '');
+
+  if (id) {
+    // 2. prepare UI for changes
+
+    // 3. create recipe object
+    state.recipe = new Recipe(id);
+
+    try {
+      // 4. get recipe data
+      await state.recipe.getRecipe();
+
+      // 5. calculate servings and time
+      state.recipe.calcTime();
+      state.recipe.calcServings();
+
+      // 6. render recipe
+      console.log(state.recipe);
+    } catch (error) {
+      alert('Error processing recipe!');
+    }
+  }
+};
+```
+
+
+
+
 
 ### 🗂 Handling state
 
@@ -141,303 +269,178 @@ because we only want to render the results on the UI only to happen after we act
 
 
 
-## ⚒️ Building the Search View
+## ⚒️ Building the Recipe Model
 
-### The base module
+- Read through a list of ingredients and in each ingredient, separate the quantity, unit and the description of each ingredient -> later we want to adjust the increment decrement servings and the quantity of ingredients should change accordingly -> also when we add them to the shopping list
+  - Read list of ingredients
+  - Parse each ingredient into the count, unit and description
+  - Before parsing ingredients -> making all units the same (standardise) and getting rid of the parentheses
 
-👉🏻 we have one central variable that stores all of the DOM elements that we need in our app. For that purpose, we are going to create a new module called `base.js`
-
-```js
-export const  elements = {
-  searchInput: document.querySelector('.search__field'),
-  searchForm: document.querySelector('.search')
-}
-```
-
-### Reading input 
-
-**searchView.js**
-
-This module will have several functions that we will export using named exports.
+We add a new method to the Recipe class in **Recipe.js**
 
 ```js
-import { elements } from './views/base';
-
-// reading input from input form
-export const getInput = () => elements.searchInput.value;
-```
-
-### Passing input value as query for API call
-
-**index.js**
-
-```js
-// inside of controlSearch async function step 1. Get query from view:
-const query = searchView.getInput();
-```
-
-
-
-### Printing results on the UI
-
-We write a function in the searchView which can receive the results and print each of the elements
-
-**searchView.js**
-
-```js
-export const renderResults = recipes => {
-  recipes.foreach(renderRecipe);
-}
-```
-
-👉🏻 We create a function which purpose is to print one single recipe and then we use it in the loop `recipes.foreach()`
-
-```js
-const renderRecipe = recipe => {
-  const markup = `
-    <li>
-   		<a class="results__link" href="#${recipe.recipe_id}">
-    		<figure class="results__fig">
-    			<img src="${recipe.image_url}" alt="${recipe.title}">
-    		</figure>
-    		<div class="results__data">
-    			<h4 class="results__name">${recipe.title}</h4>
-    			<p class="results__author">${recipe.publisher}</p>
-    		</div>
-    	</a>
-    </li>
-	`;
-  elements.searchResList.insertAdjacent('beforeend', markup);
-}
-```
-
-We use our `renderResults` function inside of our controller **index.js**
-
-```js
-// controlSearch async function step 5. render results on UI
-searchView.renderResults(state.search.result);
-```
-
-
-
-### Clearing out the input once that the user searches for a recipe
-
-We write a new function `clearInput` in our `searchView` module
-
-```js
-export const clearInput = () => {
-  elements.searchInput.value = ''
-};
-```
-
-we call it inside of index.js in step 3. prepare UI for results
-
-```js
-searchView.clearInput();
-```
-
-
-
-### Clear the results before displaying new results
-
-we do this in the step 3. prepare UI for results. for that we create a new function in searchView
-
-```js
-export const clearResults = () => {
-  elements.searchResList.innerHTML = '';
-}
-```
-
-```js
-searchView.clearResults();
-```
-
-
-
-### Reduce title from results so that they only ocuppy one line
-
-We need to write an algorithm, in the searchView module
-
-```js
-const limitRecipeTitle = (title, limit = 17) =>  {
-  const newTitle = [];
-  if ( title.length > limit ) {
-   	title.split(' ').reduce(acc, current) => {
-      if (acc + current.length < limit) {
-      	  newTitle.push(current);
+parseIngredients() {
+  const unitsLong = ['tablespoons', 'tablespoon', 'ounces', 'ounce', 'teaspoons', 'teaspoon', 'cups', 'pounds' ];
+  const unitsShort = ['tbsp', 'tbsp', 'oz', 'oz', 'tsp', 'tsp', 'cup', 'pound'];
+  
+  const  newIngredients = this.ingredients.map(el => {
+    // 1. uniform units
+    let ingredient = el.toLowerCase();
+    unitsLong.forEach((unit, i) => {
+      ingredient = el.replace(unit, unitsShort[i]);
+    })
+    
+    // 2. remove parentheses
+    ingredient = el.replace(/ *\([^)]*\) */g, ' ');
+    
+    // 3. parse ingredients into count, unit and description
+    const arrIng = ingredient.split(' ');
+    const unitIndex = arrIng.findIndex(el2 => unitsShort.includes(el2));
+    
+    let objIng;
+    if (unitIndex > -1) {
+      // There is a unit
+      // eg. 3 1/2 cups, arrcount = [3, 1/2]
+      const arrCount = arrIng.slice(0, unitIndex); 
+      let count;
+      if (arrCount.length === 1) {
+        count = eval(arrIng[0].replace('-', '+'));
+      } else {
+        // eval("4+1/2") --> 4.5
+        count = eval(arrCount.join('+'));
       }
-      return acc + current.length;
-    }, 0);
-    return `${newTitle.join(' ')} ...`;
-  }
-  return title;
+      objIng = {
+        count,
+        unit: arrIng[unitIndex],
+        ingredient: arrIng.slice(unitIndex + 1).join(' ');
+      }
+    } else if (parseInt(arrIng[0], 10)) {
+      // There is no unit, but quantity
+      objIng = {
+        count: parseInt(arrIng[0], 10),
+        unit: '',
+        ingredient: arrIng.slice(1);.join(' ');
+      }
+               
+    } else if (unitIndex === -1) {
+      // There is no unit and no number in 1st position
+      objIng = {
+        count: 1,
+        unit: '',
+        ingredient
+      }
+    }
+    return objIng;
+  });
+  this.ingredients = newIngredients;
 }
 ```
 
-👉🏻 limit of characters accepted as the maximum length of the title.
-
-split the title into its words and then use the reduce method on the resulting array which allows us to have an accumulator -> like a variable that we can add to in each iteration of the loop. In each iteration of the loop we test if the current title + next word is still under the maximum length 
 
 
+We create two arrays:
+
+1. First units appear as they do in our ingredients 
+2. Second array as we want them to be
+3. Then we replace the long version with the short uniformed version
+4. We loop over the long unit (explanation)
+5. Removing parentheses with regular expression
 
 
 
-## ⭕️ Rendering an AJAX loading spinner
 
-We want a spinner to appear both in the results list and in the recipe whenever we click in one of the restyles. 
 
-We are creating it in **base.js** -> not only for the search but also for other modules
+Separating count, unit description:
+
+- Case 1: only number + description
+- Case 2: number + unit + description
+- Case 3: description
+
+
+
+We convert ingredient string into an array with split method
+
+-> test if there is a unit and check where it is located
+
+- Find the index at which the unit is located
+
+
+
+We assume that everything that comes before the unit is the number 
+
+
+
+We join them together with + sign and then evaluate the result of that
+
+In ES6 ingredient: ingredient -> ingredient
+
+
+
+Parse ingredients in index.js
+
+
+
+## ⚒️ Building the Recipe Model
+
+Rendering the recipe in the user interface. We create `RecipeView.js`
 
 ```js
-export const renderLoader = parentElement => {
-  const loader = `
-		<div class="loader">
-			<svg>
-				<use href="img/icons.svg#icon-cw"></use>
-			</svg>
-		</div>
-	`;
-  parent.insertAdjacentHTML('afterbegin', loader);
+export const renderRecipe = recipe => {
+  const markup = // here html markup where we replace some elements
+	
 }
 ```
 
-because we want it to be reusable, we use a parameter that indicates the element's parent so that the loader is attach to the element that we wish in each moment. 
-
-
-
-
-
-we call the loader in the step 3. prepare UI for results of controlSearch in index.js
+--> ingredients: we don't know how many so we have to create a loop 
 
 ```js
-renderLoader(elements.searchRes);
+const createIngredient = ingredient => `
+            <li class="recipe__item">
+                <svg class="recipe__icon">
+                    <use href="img/icons.svg#icon-check"></use>
+                </svg>
+                <div class="recipe__count">${ingredient.count}</div>
+                <div class="recipe__ingredient">
+                    <span class="recipe__unit">${ingredient.unit}</span>
+                    ${ingredient.description}
+                </div>
+            </li>
+
 ```
 
-to make the spinner disappear when the data loads. We create a method `clearLoader` method
+We render the recipe
+
+
+
+clearRecipe
 
 ```js
-export const clearLoader = () => {
-  const loader = document.querySelector(`.${elementStrings.loader}`);
-  if (loader) loader.parentElement.removeChild(loader);
-};
-```
-
-when rendring the results on UI we start by removing the loader
-
-Step 5....
-
-```js
-clearLoader();
-```
-
-
-
-## Adding Pagination
-
-Search results pagination. 
-
-1. change renderResults function -> we pass recipes but also the page we want to display and results per page
-
-```js
-export const renderResults = (recipes, page = 1, resPerPage = 10) => {
-  const start = (page - 1) * resPerPage;
-  const end = page * resPerPage;
-  
-  recipes.slice(start, end).forEach(renderRecipe);
+export const clearRecipe = () => {
+  elements.recipe.innerHTML = '';
 }
 ```
 
-👉🏻 we determine which one is the first to show and which one is the last
+
+
+---
 
 
 
-
-
-2. render buttons on the interface: we write a private funciton `renderButtons`  -> render buttons according to the number of the page that we're on 
-
-```js
-const renderButtons = (page, numResults, resPerPage) => {
-  const pages = Math.ceil(numResults / resPerPage);
-  
-  if (page === 1 && pages > 1) {
-    // Button to go to next page
-    
-  } else if (page < pages) {
-    
-  } else if (page === pages && pages > 1) {
-    // Button to previous page
-    
-  } 
-}
-```
-
-create another function 
+We also have grams or l
 
 ```js
-// type: prev or next
-const createButton = (page, type) => `
-                <button class="btn-inline results__btn--${type}" data-goto=${type === 'prev' ? page - 1 : page + 1}>
-                    <svg class="search__icon">
-                        <use href="img/icons.svg#icon-triangle-${type === 'prev' ? 'left' : 'right'}"></use>
-                    </svg>
-                    <span>Page ${type === 'prev' ? page - 1 : page + 1}</span>
-                </button>
-`
+const units = [...unitsShort, 'kg', 'g'];
 ```
 
-we use data-* attribute because we'll later attach event handlers to the buttons -> identify them.
+---
 
-We call the function:
+Transforming the 0.5 to 1/2
 
-```js
-const renderButtons = (page, numResults, resPerPage) => {
-  const pages = Math.ceil(numResults / resPerPage);
-  let button;
-  
-  if (page === 1 && pages > 1) {
-    // Button to go to next page
-    button = createButton(page, 'next');
-  } else if (page < pages) {
-    // Both buttons
-    button = createButton(page, 'next') + createButton(page, 'prev');
-  } else if (page === pages && pages > 1) {
-    // Button to previous page
-    button = createButton(page, 'prev');
-  } 
-  elements.searchResPages.insertAdjacentHTML('afterbegin', button);
-}
+We use a third-party project: [fractional.js](https://github.com/ekg/fraction.js/)
+
+```bash
+npm install fractional --save
 ```
 
-why rounding up ceil (2.3 -> 3 pages instead of 2)
 
-we call them  inside renderResults
-
-
-
-
-
-
-
-3. attach some event handlers to these buttons in order to make the funcitonality work 
-
-taking advantage od data-* attribute
-
-we go back to the controller (event listeners)  we use event delegation because buttons are not there when the page loads for the first time.  We add the event listener to the box with results__pages
-
-```js
-elements.searchResPages.addEventListener('click', e => {
-  const btn = e.target.closest('.btn-inline');
-  if (btn) {
-    const goToPage = parseInt(btn.dataset.goto, 10);
-    searchView.clearResults();
-    searchView.renderResults(state.search.result, goToPage);
-  }
-})
-```
-
-we use the `closest` method: returns the closest ancestor of the current element which matches the selectors given in paramether
-
-we read the data stored in the data-* attribute
-
-we also clear the buttons in the `clearResults` function
 
