@@ -477,3 +477,92 @@ const formatCount = (count) => {
 
 > Explain this. We want to display 2 1/2 rather than 5/2
 
+
+
+
+
+----
+
+Search list, the recipe selected should stay with dark background
+
+We add function in searchView
+
+```js
+export const highlightSelected = id => {
+  const resultsArr = Array.from(document.querySelectorAll('.results__link'));
+  resultsArr.forEach(el => {
+    el.classList.remove('results__link--active');
+  })
+ document.querySelector(`a[href="#${id}"]`).classList.add('results__link--active');
+}
+```
+
+----
+
+Updating Recipe servings
+
+Update servings and ingredients list whenever we click the increase or decrease buttons
+
+
+
+**Recipe.js**
+
+New method
+
+```js
+// type can be  'dec', 'inc'
+updateServings(type) {
+  // Servings
+  const newServings = type === 'dec' ? this.servings - 1 : this.servings + 1;
+  
+  // Ingredients
+  this.ingredients.forEach(ing => {
+    ing.count *= newServings / this.servings;
+  })
+  
+  this.servings = newServings;
+}
+```
+
+
+
+we implement event handlers for 2 buttons in index.js -> we have to make use of event delegation because buttons are not there from the beginning
+
+**index.js**
+
+```js
+// Handling recipe button clicks
+elements.recipe.addEventListener('click', e => {
+  if (e.target.matches('.btn-decrease, .btn-decrease *')) {
+    // Decrease button is clicked
+    if (state.recipe.servings > 1) {
+    	state.recipe.updateServings('dec');
+    }
+  } else if (e.target.matches('.btn-increase, btn-increase *')) {
+    // Increase button is clicked
+    state.recipe.updateServings('inc');
+  }
+})
+```
+
+> `.btn-decrease, .btn-decrease *` means btn-decrease or any child
+
+
+
+Updating UI
+
+New method in recipe View
+
+```js
+export const updateServingsIngredients = recipe => {
+  // Update servings
+  document.querySelector('.recipe__info-data--people').textcontent = recipe.servings;
+  
+  // Update ingredients
+	const countElements = Array.from(document.querySelectorAll('.recipe__count'));
+  countElements.forEach((el, i) => {
+    el.textcontent = formatCount(recipe.ingredients[i].count);
+  })
+}
+```
+

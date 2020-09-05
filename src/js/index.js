@@ -65,22 +65,25 @@ const controlRecipe = async () => {
 
   if (id) {
     // 2. prepare UI for changes
-    renderLoader(elements.recipe);
     recipeView.clearRecipe();
+    renderLoader(elements.recipe);
 
-    // 3. create recipe object
+    // 3. highlight selected search item
+    if (state.search) searchView.highlightSelected(id);
+
+    // 4. create recipe object
     state.recipe = new Recipe(id);
 
     try {
-      // 4. get recipe data and parse ingredients
+      // 5. get recipe data and parse ingredients
       await state.recipe.getRecipe();
       state.recipe.parseIngredients();
 
-      // 5. calculate servings and time
+      // 6. calculate servings and time
       state.recipe.calcTime();
       state.recipe.calcServings();
 
-      // 6. render recipe
+      // 7. render recipe
       clearLoader();
       recipeView.renderRecipe(state.recipe);
     } catch (error) {
@@ -91,4 +94,19 @@ const controlRecipe = async () => {
 
 ['hashchange', 'load'].forEach((event) => {
   window.addEventListener(event, controlRecipe);
+});
+
+// Handling recipe button clicks
+elements.recipe.addEventListener('click', (e) => {
+  if (e.target.matches('.btn-decrease, .btn-decrease *')) {
+    // Decrease button is clicked
+    if (state.recipe.servings > 1) {
+      state.recipe.updateServings('dec');
+      recipeView.updateServingsIngredients(state.recipe);
+    }
+  } else if (e.target.matches('.btn-increase, .btn-increase *')) {
+    // Increase button is clicked
+    state.recipe.updateServings('inc');
+    recipeView.updateServingsIngredients(state.recipe);
+  }
 });
