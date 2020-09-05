@@ -1,101 +1,37 @@
-# 03: First steps
+# 04: Recipe Model
 
-I define the Search model and view, as well as the spinner and API calls
+Two new files are created: `models/Recipe.js` and `views/recipeView.js`
 
 
 
 ## ☑️ Tasks
 
-- API calls
-- Search Model
-- Search controller
-- Search View
-- Spinner
-- Search results pagination
+- Recipe Model
+- Connecting Recipe Model to Controller
+- Recipe View
+- Recipe servings 
 
-
+  
 
 <br />
 
 
 
+## ⚒️ Building the Recipe Model
 
-## ☎️ API calls
-I'm going to use the API from Jonas Schmedtmann fortify-app. The methods are:
+We use axios again for AJAX calls. We also use ES6 classes to create a recipe class that holds all the data for a recipe.
 
-- for getting results matching user's input: `https://forkify-api.herokuapp.com/api/search`
-- for getting details of a specified recipe `https://forkify-api.herokuapp.com/api/get`
-
-> ℹ️ No API key required!
-
-<br >
-
-### Using axios library
-
-👉🏻 `fetch` has the problem that is not supported in all browsers, so I'll use `axios` library, whic h is a popular HTTP request library. 
-
-We install it first:
-
-```bash
-npm install axios --save
-```
-
-Then we import it:
+**Recipe.js**
 
 ```js
 import axios from 'axios';
 
-async function getResults(query) {
-  const res = await axios(`https://forkify-api.herokuapp.com/api/search?q=${query}`);
-  const recipes = res.data.recipes;
-  
-}
-```
-
-<details><summary><strong>A bit more...</strong></summary>
-<ul>
-  <li>we create an async function that receives a parameter that will be the query that will be used for the API</li>
-  <li>Axios returns a promise so we `await` the result and save it to a constant</li>
-</ul>
-</details>
-
-Here the `try` and `catch` method is added:
-
-```js
-import axios from 'axios';
-
-async function getResults(query) {
-  
-  try {
-      const res = await axios(`https://forkify-api.herokuapp.com/api/search?q=${query}`);
-  	const recipes = res.data.recipes;
-  } catch (error) {
-    alert(error);
-  }
-}
-```
-
-
-
-<br />
-
-
-
-## ⚒️ Building the Search Model
-
-For the search functionality we will use ES6 classes.
-
-**Search.js**
-
-```js
-import axios from 'axios';
-
-export default class Search {
-  constructor(query) {
-    this.query = query;
+export default class Recipe {
+  constructor(id) {
+    this.id = id;
   }
   
-  async getResults(query) {
+  async getRecipe(id) {
     try {
         const res = await axios(`https://forkify-api.herokuapp.com/api/search?q=${this.query}`);
       	this.result = res.data.recipes;
