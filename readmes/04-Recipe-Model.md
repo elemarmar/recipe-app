@@ -33,21 +33,16 @@ export default class Recipe {
   
   async getRecipe(id) {
     try {
-        const res = await axios(`https://forkify-api.herokuapp.com/api/search?q=${this.query}`);
+        const res = await axios(`https://forkify-api.herokuapp.com/api/get?rId=${this.query}`);
       	this.result = res.data.recipes;
     } catch (error) {
-      alert(error);
+      console.log(error);
     }
 	}
 }
-
 ```
 
-We have a **method** used to get results for the search query --> API call async function written in the previous step.
 
-👉🏻 `getResults` is an asynchronous method of the class Search.  It doesn't accept a parameter because the query will be read from the `query` property of the object itself. 
-
-👉🏻we want to save the recipes in the object -> therefore `this.result = res.data.recipes`
 
 <br >
 
@@ -56,11 +51,13 @@ We import the newly created class in our controller module:
 **index.js**
 
 ```js
-import Search from './models/Search';
-const search = new Search('pizza');
-console.log(search);
+import Recipe from './models/Recipe';
 
-search.getResults();
+/**
+ * RECIPE CONTROLLER
+ */
+const rec = new Recipe(46956);
+rec.getRecipe();
 ```
 
 👉🏻 we use the `new` operator and pass a query into it. This query will be attached as a property of the new Search object so that all the data about the search is encapsulated inside the object
