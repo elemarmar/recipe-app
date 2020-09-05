@@ -53,5 +53,6 @@ elements.searchResPages.addEventListener('click', (e) => {
 /**
  * RECIPE CONTROLLER
  */
-const rec = new Recipe(46956);
+const rec = new Recipe(47746);
 rec.getRecipe();
+console.log(rec);
