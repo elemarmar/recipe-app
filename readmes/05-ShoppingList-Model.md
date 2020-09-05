@@ -191,3 +191,28 @@ elements.shopping.addEventListener('click', ev => {
 });
 ```
 
+Now we handle increase and decrease buttons in **index.js**
+
+```js
+// Handle delete and update list item events
+elements.shopping.addEventListener('click', (ev) => {
+  const id = ev.target.closest('.shopping__item').dataset.itemid;
+  // Handle delete button
+  if (ev.target.matches('.shopping__delete, .shopping__delete *')) {
+    // Delete from state
+    state.list.deleteItem(id);
+
+    // Delete from UI
+    listView.deleteItem(id);
+    
+  // Handle the count update
+  } else if (ev.target.matches('.shopping__count-value')) {
+   
+    // read data from interface and update data
+    const value = parseFloat(ev.target.value, 10);
+    state.list.updateCount(id, value);
+    
+  }
+});
+```
+
