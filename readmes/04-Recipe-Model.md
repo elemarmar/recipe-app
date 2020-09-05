@@ -444,3 +444,36 @@ npm install fractional --save
 
 
 
+**recipeViews**
+
+```js
+import { Fraction } from 'fractional';
+```
+
+We create a new function called `formatCount`
+
+```js
+const formatCount = (count) => {
+  if (count) {
+    const newCount = Math.round(count * 10000) / 10000;
+    const [int, dec] = newCount
+      .toString()
+      .split('.')
+      .map((el) => parseInt(el, 10));
+
+    if (!dec) return newCount;
+
+    if (int === 0) {
+      const fr = new Fraction(newCount);
+      return `${fr.numerator}/${fr.denominator}`;
+    } else {
+      const fr = new Fraction(newCount - int);
+      return `${int} ${fr.numerator}/${fr.denominator}`;
+    }
+  }
+  return '?';
+};
+```
+
+> Explain this. We want to display 2 1/2 rather than 5/2
+
