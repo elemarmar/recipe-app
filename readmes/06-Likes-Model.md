@@ -280,3 +280,29 @@ window.addEventListener('load', () => {
 })
 ```
 
+```js
+const newCount = Math.round(count * 10000) / 10000;
+```
+
+
+
+----
+
+build process
+
+```bash
+npm run build
+```
+
+
+
+Challenges:
+
+- Implement button to delete all shopping list items
+- Implement functionality to manually add items to shopping list
+- Save shopping list data in local Stoage
+- Improve ingredient parsing algorithgm
+- Come up with an algorithm for calculating the amount of servings
+- Improve error handling
+
+- Improve documentation
