@@ -2,6 +2,8 @@
 
 #  🍽 Recipe app
 
+![readme-cover](readme-cover.png)
+
 %name% is a simple recipe searching app that allows the user to search for recipes, retrieving data from a third party API (.....). The purpose of building this app was to practice ES6 JavaScript, including:
 
 - Async javascript, AJAX and APIs.
