@@ -42,3 +42,7 @@ This app consists of:
 
 ---
 
+<br />
+
+## Thanks 
+This project is based on [Jonas Schmedtmann](https://github.com/jonasschmedtmann) forkify project.
